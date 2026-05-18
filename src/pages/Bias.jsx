@@ -7,7 +7,6 @@ function fmt(n) {
   return (n >= 0 ? "+" : "") + n.toLocaleString();
 }
 
-// Fluent-style SVG icons (Microsoft Fluent System Icons paths)
 function IconArrowUp() {
   return (
     <svg width="11" height="11" viewBox="0 0 20 20" fill="none" style={{ display: "inline-block", verticalAlign: "middle" }}>
@@ -64,47 +63,43 @@ function BiasTag({ bias }) {
   );
 }
 
-function NetBadge({ symbol, net }) {
-  const color = net > 0 ? "var(--green)" : net < 0 ? "var(--red)" : "var(--text-3)";
-  const icon  = net > 0 ? <IconArrowUp /> : net < 0 ? <IconArrowDown /> : <IconMinus />;
-  return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
-      <span style={{ color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.67rem" }}>{symbol}</span>
-      <span style={{ color, fontFamily: "var(--font-mono)", fontSize: "0.67rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "2px" }}>
-        {icon}{fmt(net)}
-      </span>
-    </span>
-  );
-}
+// ── NEW: Currency card — mirrors MetalCard, no sub-labels ─────────────────
+function CurrencyCard({ p }) {
+  const baseColor  = p.base.net  > 0 ? "var(--green)" : p.base.net  < 0 ? "var(--red)" : "var(--text-3)";
+  const quoteColor = p.quote.net > 0 ? "var(--green)" : p.quote.net < 0 ? "var(--red)" : "var(--text-3)";
+  const baseIcon   = p.base.net  > 0 ? <IconArrowUp /> : p.base.net  < 0 ? <IconArrowDown /> : <IconMinus />;
+  const quoteIcon  = p.quote.net > 0 ? <IconArrowUp /> : p.quote.net < 0 ? <IconArrowDown /> : <IconMinus />;
 
-function PairRow({ p, i }) {
   return (
     <div style={{
-      padding: "8px 14px",
-      borderTop: i === 0 ? "none" : "1px solid var(--border)",
       background: "var(--bg-2)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      gap: "8px",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius)",
+      padding: "14px",
     }}>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "0.75rem",
-          fontWeight: 500,
-          color: "var(--text)",
-          marginBottom: "3px",
-        }}>
+      {/* pair name + bias badge on same row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem", fontWeight: 500, color: "var(--text)" }}>
           {p.pair}
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          <NetBadge symbol={p.base.symbol}  net={p.base.net}  />
-          <span style={{ color: "var(--border-2)", fontSize: "0.6rem" }}>vs</span>
-          <NetBadge symbol={p.quote.symbol} net={p.quote.net} />
-        </div>
+        </span>
+        <BiasTag bias={p.bias} />
       </div>
-      <BiasTag bias={p.bias} />
+      {/* base row */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+        {[
+          { label: p.base.symbol,  net: p.base.net,  color: baseColor,  icon: baseIcon  },
+          { label: p.quote.symbol, net: p.quote.net, color: quoteColor, icon: quoteIcon },
+        ].map(({ label, net, color, icon }) => (
+          <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", color: "var(--text-3)" }}>
+              {label}
+            </span>
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 500, color, display: "inline-flex", alignItems: "center", gap: "3px" }}>
+              {icon}{fmt(net)}
+            </span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -130,8 +125,8 @@ function MetalCard({ p }) {
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
         {[
-          { label: p.base.symbol,  net: p.base.net,  color: baseColor,  icon: baseIcon,  sub: "commercial"    },
-          { label: p.quote.symbol, net: p.quote.net, color: quoteColor, icon: quoteIcon, sub: "non-commercial" },
+          { label: p.base.symbol,  net: p.base.net,  color: baseColor,  icon: baseIcon,  sub: "commercial"     },
+          { label: p.quote.symbol, net: p.quote.net, color: quoteColor, icon: quoteIcon, sub: "non-commercial"  },
         ].map(({ label, net, color, icon, sub }) => (
           <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
@@ -230,7 +225,7 @@ export default function Bias() {
             ))}
           </div>
 
-          {/* Currencies */}
+          {/* Currencies — 2-col card grid (was full-width list) */}
           <div style={{ marginBottom: "20px" }}>
             <div style={{
               display: "flex",
@@ -243,12 +238,12 @@ export default function Bias() {
               <span style={{ fontFamily: "var(--font-serif)", fontSize: "0.9rem", fontWeight: 600, color: "var(--text)" }}>Currencies</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "var(--text-3)" }}>non-commercial positioning</span>
             </div>
-            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
-              {data.currencies.map((p, i) => <PairRow key={p.pair} p={p} i={i} />)}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
+              {data.currencies.map((p) => <CurrencyCard key={p.pair} p={p} />)}
             </div>
           </div>
 
-          {/* Metals — 2-col grid */}
+          {/* Metals — 2-col grid (unchanged) */}
           <div style={{ marginBottom: "20px" }}>
             <div style={{
               display: "flex",
