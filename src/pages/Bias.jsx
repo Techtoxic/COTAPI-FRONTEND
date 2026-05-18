@@ -35,27 +35,22 @@ function IconMinus() {
 
 function BiasTag({ bias }) {
   const cfg = {
-    BUY:       { bg: "rgba(74,154,106,0.12)", color: "var(--green)", border: "rgba(74,154,106,0.3)",  icon: <IconArrowUp />,   label: "BUY"  },
-    SELL:      { bg: "rgba(154,74,74,0.12)",  color: "var(--red)",   border: "rgba(154,74,74,0.3)",   icon: <IconArrowDown />, label: "SELL" },
-    UNCERTAIN: { bg: "rgba(90,82,72,0.08)",   color: "var(--text-3)",border: "rgba(90,82,72,0.15)",   icon: <IconMinus />,     label: ""     },
+    BUY:       { color: "var(--green)",  icon: <IconArrowUp />,   label: "BUY"  },
+    SELL:      { color: "var(--red)",    icon: <IconArrowDown />, label: "SELL" },
+    UNCERTAIN: { color: "var(--text-3)", icon: <IconMinus />,     label: ""     },
   };
   const c = cfg[bias] || cfg.UNCERTAIN;
   return (
     <span style={{
       display: "inline-flex",
       alignItems: "center",
-      gap: "4px",
+      gap: "3px",
       fontFamily: "var(--font-mono)",
-      fontSize: "0.6rem",
+      fontSize: "0.54rem",
       fontWeight: 500,
-      letterSpacing: "0.08em",
-      padding: "3px 8px",
-      borderRadius: "var(--radius)",
-      background: c.bg,
+      letterSpacing: "0.1em",
       color: c.color,
-      border: `1px solid ${c.border}`,
       whiteSpace: "nowrap",
-      minWidth: "52px",
       justifyContent: "center",
     }}>
       {c.icon}{c.label}
@@ -67,9 +62,9 @@ function NetBadge({ symbol, net }) {
   const color = net > 0 ? "var(--green)" : net < 0 ? "var(--red)" : "var(--text-3)";
   const icon  = net > 0 ? <IconArrowUp /> : net < 0 ? <IconArrowDown /> : <IconMinus />;
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
-      <span style={{ color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.67rem" }}>{symbol}</span>
-      <span style={{ color, fontFamily: "var(--font-mono)", fontSize: "0.67rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "2px" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "2px" }}>
+      <span style={{ color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.6rem" }}>{symbol}</span>
+      <span style={{ color, fontFamily: "var(--font-mono)", fontSize: "0.6rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "2px" }}>
         {icon}{fmt(net)}
       </span>
     </span>
