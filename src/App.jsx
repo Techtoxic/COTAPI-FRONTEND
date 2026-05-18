@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink, useLocation } from "react-router
 import Landing from "./pages/Landing";
 import Docs from "./pages/Docs";
 import Playground from "./pages/Playground";
+import Bias from "./pages/Bias";
 import Contact from "./pages/Contact";
 import "./App.css";
 
@@ -14,6 +15,7 @@ function Nav() {
     { to: "/", label: "Home" },
     { to: "/docs", label: "Docs" },
     { to: "/playground", label: "Playground" },
+    { to: "/bias", label: "Bias" },
     { to: "/contact", label: "Contact" },
   ];
 
@@ -77,6 +79,7 @@ export default function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/docs" element={<Docs />} />
             <Route path="/playground" element={<Playground />} />
+            <Route path="/bias" element={<Bias />} />
             <Route path="/contact" element={<Contact />} />
           </Routes>
         </main>
