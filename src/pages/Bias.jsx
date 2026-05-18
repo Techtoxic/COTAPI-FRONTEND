@@ -76,49 +76,52 @@ function NetBadge({ symbol, net }) {
   );
 }
 
-// One half of a row — pair name + badge inline, data line below
+// Half of a card — pair name + badge on one line, data on one line (no wrap)
 function PairCell({ p }) {
   return (
-    <div style={{ flex: 1, minWidth: 0, padding: "8px 14px" }}>
-      {/* pair name + badge on same line */}
+    <div style={{ flex: 1, minWidth: 0 }}>
+      {/* line 1: pair name + badge inline */}
       <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
         <span style={{
           fontFamily: "var(--font-mono)",
           fontSize: "0.75rem",
           fontWeight: 500,
           color: "var(--text)",
+          whiteSpace: "nowrap",
         }}>
           {p.pair}
         </span>
         <BiasTag bias={p.bias} />
       </div>
-      {/* data line */}
-      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+      {/* line 2: base · quote — stays on one line, no wrap */}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "nowrap" }}>
         <NetBadge symbol={p.base.symbol}  net={p.base.net}  />
-        <span style={{ color: "var(--border-2)", fontSize: "0.6rem" }}>·</span>
+        <span style={{ color: "var(--border-2)", fontSize: "0.6rem" }}>vs</span>
         <NetBadge symbol={p.quote.symbol} net={p.quote.net} />
       </div>
     </div>
   );
 }
 
-// Full row — always two PairCells side by side
-function PairRow({ left, right, i }) {
+// Standalone rectangle — same look as original PairRow card, holds 2 currencies
+function PairRow({ left, right }) {
   return (
     <div style={{
-      borderTop: i === 0 ? "none" : "1px solid var(--border)",
+      padding: "8px 14px",
       background: "var(--bg-2)",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius)",
       display: "flex",
-      alignItems: "stretch",
+      alignItems: "center",
+      gap: "8px",
     }}>
       <PairCell p={left} />
-      {/* vertical divider */}
-      <div style={{ width: "1px", background: "var(--border)", flexShrink: 0 }} />
-      {/* right cell — empty placeholder if odd number of pairs */}
-      {right
-        ? <PairCell p={right} />
-        : <div style={{ flex: 1 }} />
-      }
+      {right && (
+        <>
+          <div style={{ width: "1px", alignSelf: "stretch", background: "var(--border)", flexShrink: 0 }} />
+          <PairCell p={right} />
+        </>
+      )}
     </div>
   );
 }
@@ -181,7 +184,7 @@ export default function Bias() {
     UNCERTAIN: all.filter((p) => p.bias === "UNCERTAIN").length,
   };
 
-  // chunk currencies into pairs of 2
+  // chunk currencies into pairs of 2 for independent rectangles
   const currencyRows = [];
   if (data?.currencies) {
     for (let i = 0; i < data.currencies.length; i += 2) {
@@ -192,9 +195,9 @@ export default function Bias() {
   return (
     <div className="page">
 
-      {/* Compact header */}
+      {/* Header — restored to match live site */}
       <div style={{ padding: "20px 0 16px" }}>
-        <div className="hero-label" style={{ marginBottom: "6px" }}>INSTITUTIONAL POSITIONING</div>
+        <div className="hero-label" style={{ marginBottom: "6px" }}>INSTITUTIONAL POSITIONING BIAS</div>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: "12px" }}>
           <h1 style={{
             fontFamily: "var(--font-serif)",
@@ -213,7 +216,8 @@ export default function Bias() {
           )}
         </div>
         <p style={{ fontSize: "0.82rem", color: "var(--text-2)", lineHeight: 1.5, maxWidth: "460px", marginTop: "6px" }}>
-          Signals require opposing institutional positioning between base and quote.
+          Institutional positioning signals from CFTC COT data. Currencies use non-commercial net.
+          Metals use commercial net vs DXY non-commercial. Signal requires opposing sides.
         </p>
       </div>
 
@@ -252,7 +256,7 @@ export default function Bias() {
             ))}
           </div>
 
-          {/* Currencies — 2 per row */}
+          {/* Currencies — independent rectangles, 2 currencies each */}
           <div style={{ marginBottom: "20px" }}>
             <div style={{
               display: "flex",
@@ -265,9 +269,10 @@ export default function Bias() {
               <span style={{ fontFamily: "var(--font-serif)", fontSize: "0.9rem", fontWeight: 600, color: "var(--text)" }}>Currencies</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "var(--text-3)" }}>non-commercial positioning</span>
             </div>
-            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
-              {currencyRows.map(({ left, right }, i) => (
-                <PairRow key={left.pair} left={left} right={right} i={i} />
+            {/* each card is its own rectangle with a gap between */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              {currencyRows.map(({ left, right }) => (
+                <PairRow key={left.pair} left={left} right={right} />
               ))}
             </div>
           </div>
@@ -331,5 +336,4 @@ export default function Bias() {
       )}
     </div>
   );
-          }
-                               
+}
