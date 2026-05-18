@@ -63,43 +63,62 @@ function BiasTag({ bias }) {
   );
 }
 
-// ── NEW: Currency card — mirrors MetalCard, no sub-labels ─────────────────
-function CurrencyCard({ p }) {
-  const baseColor  = p.base.net  > 0 ? "var(--green)" : p.base.net  < 0 ? "var(--red)" : "var(--text-3)";
-  const quoteColor = p.quote.net > 0 ? "var(--green)" : p.quote.net < 0 ? "var(--red)" : "var(--text-3)";
-  const baseIcon   = p.base.net  > 0 ? <IconArrowUp /> : p.base.net  < 0 ? <IconArrowDown /> : <IconMinus />;
-  const quoteIcon  = p.quote.net > 0 ? <IconArrowUp /> : p.quote.net < 0 ? <IconArrowDown /> : <IconMinus />;
-
+function NetBadge({ symbol, net }) {
+  const color = net > 0 ? "var(--green)" : net < 0 ? "var(--red)" : "var(--text-3)";
+  const icon  = net > 0 ? <IconArrowUp /> : net < 0 ? <IconArrowDown /> : <IconMinus />;
   return (
-    <div style={{
-      background: "var(--bg-2)",
-      border: "1px solid var(--border)",
-      borderRadius: "var(--radius)",
-      padding: "14px",
-    }}>
-      {/* pair name + bias badge on same row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-        <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.78rem", fontWeight: 500, color: "var(--text)" }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: "3px" }}>
+      <span style={{ color: "var(--text-3)", fontFamily: "var(--font-mono)", fontSize: "0.67rem" }}>{symbol}</span>
+      <span style={{ color, fontFamily: "var(--font-mono)", fontSize: "0.67rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "2px" }}>
+        {icon}{fmt(net)}
+      </span>
+    </span>
+  );
+}
+
+// One half of a row — pair name + badge inline, data line below
+function PairCell({ p }) {
+  return (
+    <div style={{ flex: 1, minWidth: 0, padding: "8px 14px" }}>
+      {/* pair name + badge on same line */}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+        <span style={{
+          fontFamily: "var(--font-mono)",
+          fontSize: "0.75rem",
+          fontWeight: 500,
+          color: "var(--text)",
+        }}>
           {p.pair}
         </span>
         <BiasTag bias={p.bias} />
       </div>
-      {/* base row */}
-      <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-        {[
-          { label: p.base.symbol,  net: p.base.net,  color: baseColor,  icon: baseIcon  },
-          { label: p.quote.symbol, net: p.quote.net, color: quoteColor, icon: quoteIcon },
-        ].map(({ label, net, color, icon }) => (
-          <div key={label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", color: "var(--text-3)" }}>
-              {label}
-            </span>
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.68rem", fontWeight: 500, color, display: "inline-flex", alignItems: "center", gap: "3px" }}>
-              {icon}{fmt(net)}
-            </span>
-          </div>
-        ))}
+      {/* data line */}
+      <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
+        <NetBadge symbol={p.base.symbol}  net={p.base.net}  />
+        <span style={{ color: "var(--border-2)", fontSize: "0.6rem" }}>·</span>
+        <NetBadge symbol={p.quote.symbol} net={p.quote.net} />
       </div>
+    </div>
+  );
+}
+
+// Full row — always two PairCells side by side
+function PairRow({ left, right, i }) {
+  return (
+    <div style={{
+      borderTop: i === 0 ? "none" : "1px solid var(--border)",
+      background: "var(--bg-2)",
+      display: "flex",
+      alignItems: "stretch",
+    }}>
+      <PairCell p={left} />
+      {/* vertical divider */}
+      <div style={{ width: "1px", background: "var(--border)", flexShrink: 0 }} />
+      {/* right cell — empty placeholder if odd number of pairs */}
+      {right
+        ? <PairCell p={right} />
+        : <div style={{ flex: 1 }} />
+      }
     </div>
   );
 }
@@ -161,6 +180,14 @@ export default function Bias() {
     SELL:      all.filter((p) => p.bias === "SELL").length,
     UNCERTAIN: all.filter((p) => p.bias === "UNCERTAIN").length,
   };
+
+  // chunk currencies into pairs of 2
+  const currencyRows = [];
+  if (data?.currencies) {
+    for (let i = 0; i < data.currencies.length; i += 2) {
+      currencyRows.push({ left: data.currencies[i], right: data.currencies[i + 1] || null });
+    }
+  }
 
   return (
     <div className="page">
@@ -225,7 +252,7 @@ export default function Bias() {
             ))}
           </div>
 
-          {/* Currencies — 2-col card grid (was full-width list) */}
+          {/* Currencies — 2 per row */}
           <div style={{ marginBottom: "20px" }}>
             <div style={{
               display: "flex",
@@ -238,8 +265,10 @@ export default function Bias() {
               <span style={{ fontFamily: "var(--font-serif)", fontSize: "0.9rem", fontWeight: 600, color: "var(--text)" }}>Currencies</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "var(--text-3)" }}>non-commercial positioning</span>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px" }}>
-              {data.currencies.map((p) => <CurrencyCard key={p.pair} p={p} />)}
+            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius)", overflow: "hidden" }}>
+              {currencyRows.map(({ left, right }, i) => (
+                <PairRow key={left.pair} left={left} right={right} i={i} />
+              ))}
             </div>
           </div>
 
@@ -302,4 +331,5 @@ export default function Bias() {
       )}
     </div>
   );
-}
+          }
+                               
