@@ -98,14 +98,10 @@ function PairCell({ p }) {
   );
 }
 
-// Standalone rectangle — same look as original PairRow card, holds 2 currencies
+// Plain row — no outer rectangle
 function PairRow({ left, right }) {
   return (
     <div style={{
-      padding: "8px 14px",
-      background: "var(--bg-2)",
-      border: "1px solid var(--border)",
-      borderRadius: "var(--radius)",
       display: "flex",
       alignItems: "center",
       gap: "8px",
@@ -179,7 +175,7 @@ export default function Bias() {
     UNCERTAIN: all.filter((p) => p.bias === "UNCERTAIN").length,
   };
 
-  // chunk currencies into pairs of 2 for independent rectangles
+  // chunk currencies into pairs of 2
   const currencyRows = [];
   if (data?.currencies) {
     for (let i = 0; i < data.currencies.length; i += 2) {
@@ -251,7 +247,7 @@ export default function Bias() {
             ))}
           </div>
 
-          {/* Currencies — independent rectangles, 2 currencies each */}
+          {/* Currencies — plain rows, no outer rectangle */}
           <div style={{ marginBottom: "20px" }}>
             <div style={{
               display: "flex",
@@ -264,8 +260,7 @@ export default function Bias() {
               <span style={{ fontFamily: "var(--font-serif)", fontSize: "0.9rem", fontWeight: 600, color: "var(--text)" }}>Currencies</span>
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "var(--text-3)" }}>non-commercial positioning</span>
             </div>
-            {/* each card is its own rectangle with a gap between */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {currencyRows.map(({ left, right }) => (
                 <PairRow key={left.pair} left={left} right={right} />
               ))}
