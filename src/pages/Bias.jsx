@@ -99,12 +99,14 @@ function PairCell({ p }) {
 }
 
 // Plain row — no outer rectangle
-function PairRow({ left, right }) {
+function PairRow({ left, right, isLast }) {
   return (
     <div style={{
       display: "flex",
       alignItems: "center",
       gap: "8px",
+      paddingBottom: isLast ? 0 : "8px",
+      borderBottom: isLast ? "none" : "1px solid var(--border)",
     }}>
       <PairCell p={left} />
       {right && (
@@ -261,8 +263,13 @@ export default function Bias() {
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.6rem", color: "var(--text-3)" }}>non-commercial positioning</span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {currencyRows.map(({ left, right }) => (
-                <PairRow key={left.pair} left={left} right={right} />
+              {currencyRows.map(({ left, right }, index) => (
+                <PairRow
+                  key={left.pair}
+                  left={left}
+                  right={right}
+                  isLast={index === currencyRows.length - 1}
+                />
               ))}
             </div>
           </div>
